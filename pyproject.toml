@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "giantfish"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+  "pygmu2",
+]
+
+[project.optional-dependencies]
+gdrive = [
+  "google-auth>=2.0.0",
+  "google-auth-oauthlib>=1.0.0",
+  "requests>=2.0.0",
+]
+
+[project.scripts]
+giantfish = "giantfish.cli:main"
+
+[tool.setuptools]
+py-modules = []
+
+[tool.uv]
+managed = true
+
+[tool.uv.sources]
+pygmu2 = { git = "https://github.com/rdpoor/pygmu2", branch = "main" }

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+.venv/
+
+# Build
+build/
+dist/
+
+# OS
+.DS_Store
+
+# Audio sources (kept out of git by default)
+/wav_sources/
+/SegmentedVoice/
+
+# Local cache (keep out of git)
+/data/cache/
