@@ -1,6 +1,7 @@
 # GiantFish
 
-A Python-based audio and music project built on top of the `pygmu2` library.
+"The World's Shortest Romance Novel", a poem by Zachary Smith, set to music
+(or something resembling music).  Built using the `pygmu2` audio/music library.
 
 ## Layout
 - `src/giantfish/`: reusable library code

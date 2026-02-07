@@ -21,7 +21,10 @@ gdrive = [
 giantfish = "giantfish.cli:main"
 
 [tool.setuptools]
-py-modules = []
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.uv]
 managed = true
