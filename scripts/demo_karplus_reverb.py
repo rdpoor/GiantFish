@@ -33,6 +33,8 @@ def main() -> None:
         sample_rate=SAMPLE_RATE,
         db=-60.0,
     )
+    print(f"rho = {rho}")
+
     pluck = pg.KarplusStrongPE(
         frequency=freq,
         rho=rho,
