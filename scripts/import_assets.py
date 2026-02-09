@@ -4,6 +4,8 @@ import json
 import pygmu2 as pg
 from pygmu2.asset_manager import AssetManager, GoogleDriveAssetLoader
 
+pg.set_sample_rate(44100)
+
 from pygmu2.logger import setup_logging, get_logger
 setup_logging(level="INFO")
 logger = get_logger(__name__)
@@ -266,9 +268,5 @@ if __name__ == "__main__":
     named_slices = create_named_slices()
     audition_slices(named_slices)
 
-# chord ideas
-# 52 59 63 70
-# 50 57 64 68
-# 53 59 64 69
-# 48 55 62 66
+
 

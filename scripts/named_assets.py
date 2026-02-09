@@ -4,6 +4,9 @@ import pygmu2 as pg
 from pygmu2.asset_manager import AssetManager, GoogleDriveAssetLoader
 from typing import Optional, Union
 
+pg.set_sample_rate(44100)
+
+
 from pygmu2.logger import setup_logging, get_logger
 setup_logging(level="INFO")
 logger = get_logger(__name__)
@@ -92,11 +95,19 @@ def load_named_wav_files() -> dict[str, pg.ProcessingElement]:
     load_named_wav_file('jasper4', 'GiantFish/wav_sources/jasper_4.wav')
     load_named_wav_file('jasper5', 'GiantFish/wav_sources/jasper_5.wav')
     load_named_wav_file('jasper6', 'GiantFish/wav_sources/jasper_6.wav')
+    load_named_wav_file('jasper1_0_3', 'GiantFish/wav_sources/jasper1_0_3.wav')
+    load_named_wav_file('jasper2_0_3', 'GiantFish/wav_sources/jasper2_0_3.wav')
+    load_named_wav_file('jasper3_0_3', 'GiantFish/wav_sources/jasper3_0_3.wav')
+    load_named_wav_file('jasper4_0_3', 'GiantFish/wav_sources/jasper4_0_3.wav')
+    load_named_wav_file('jasper5_0_3', 'GiantFish/wav_sources/jasper5_0_3.wav')
+    load_named_wav_file('jasper6_0_3', 'GiantFish/wav_sources/jasper6_0_3.wav')
     load_named_wav_file('frogs1', 'GiantFish/wav_sources/8 46th Ave 3.wav')
     load_named_wav_file('frogs2', 'GiantFish/wav_sources/Tompkins Ln 2.wav')
-    load_named_wav_file('foghorns', 'GiantFish/wav_sources/Valparaiso St 5.wav')
+    load_named_wav_file('foghorns', 'GiantFish/wav_sources/Foghorns.wav')
     load_named_wav_file('snores', 'GiantFish/wav_sources/Lighthouse Ave.wav')
-    load_named_wav_file('bubbles', 'GiantFish/wav_sources/Hummy Bubbles.wav')
+    load_named_wav_file('bubbles', 'GiantFish/wav_sources/Bubbles.wav')
+    load_named_wav_file('bubbles_0_125', 'GiantFish/wav_sources/Bubbles_0_125.wav')
+    load_named_wav_file('crowd2', 'GiantFish/wav_sources/080122-007.wav')
 
     return named_wav_files
 
@@ -105,8 +116,8 @@ def post_process_wav_files(named_wav_files:dict[str, pg.ProcessingElement]) -> d
     Add gain, compression, etc to wave files 
     """
     # filter low-frequency rumble from foghorns
-    foghorns = named_wav_files['foghorns']
-    named_wav_files['foghorns'] = highpass_4th_order(foghorns, 100.0)
+    # foghorns = named_wav_files['foghorns']
+    # named_wav_files['foghorns'] = highpass_4th_order(foghorns, 100.0)
 
     return named_wav_files
 
@@ -121,81 +132,83 @@ def make_named_slices(named_wav_files:dict[str, pg.ProcessingElement]) -> dict[s
     def _make_slice(
         wav_name:str, 
         start:Optional[float] = None,
-        end:Optional[float] = None
+        end:Optional[float] = None,
+        sample_rate:Optional[int] = None
     ):
         wav_stream = named_wav_files[wav_name]
         if start is None and end is None:
             return wav_stream
         else:
-            sample_rate = wav_stream.sample_rate
+            if sample_rate is None:
+                sample_rate = wav_stream.sample_rate
             extent = wav_stream.extent()
             start_sample = s2s(start, sample_rate) if start is not None else extent.start
             end_sample = s2s(end, sample_rate) if end is not None else extent.end_sample
             dur_samples = end_sample - start_sample
-            return pe.SlicePE(wav_stream, start_sample, dur_samples)
+            return pg.SlicePE(wav_stream, start_sample, dur_samples)
 
     def make_slice(
         slice_name:str, 
         wav_name:str, 
         start:Optional[float] = None,
-        end:Optional[float] = None):
+        end:Optional[float] = None,
+        sample_rate:Optional[int] = None):
         """
         Extract a slice from the wav_name .wav file and add it to the dict of
         slice names
         """
-        slices[slice_name] = _make_slice(wav_name, start, end)
+        slices[slice_name] = _make_slice(wav_name, start, end, sample_rate)
 
-    make_slice('r1 my half-brother', 'rdp_v1', 0.588796, 3.221062)
-    make_slice('r1 my half-brother', 'rdp_v1',  0.588796, 3.221062)
-    make_slice('r1 his house is', 'rdp_v1', 3.278787, 6.742294)
-    make_slice('r1 most days', 'rdp_v1', 7.157915, 12.918883)
-    make_slice('r1 tethered only by', 'rdp_v1', 12.965063, 17.952513)
-    make_slice('r1 at night, far off', 'rdp_v1', 18.552855, 25.826220)
-    make_slice('r1 once a fish swam', 'rdp_v1', 26.484287, 31.864268)
-    make_slice('r1 once his breathing', 'rdp_v1', 31.806543, 35.062240)
-    make_slice('r1 he put something', 'rdp_v1', 35.593311, 38.087036)
-    make_slice('r1 here, hold this', 'rdp_v1', 38.087036, 40.938657)
-    make_slice('r1 a while or maybe', 'rdp_v1', 41.700629, 46.018468)
-    make_slice('r1 we were standing', 'rdp_v1', 46.711170, 51.756345)
-    make_slice('r1 this is the skull', 'rdp_v1', 51.894886, 54.296251)
-    make_slice('r1 if you put it up', 'rdp_v1', 54.515606, 57.263322)
-    make_slice('r1 you can hear', 'rdp_v1', 57.309502, 61.419531)
-    make_slice('r1 to be born', 'rdp_v1', 61.419531, 64.305787)
+    make_slice('r1 my half brother', 'rdp_v1',  0.588796, 3.221062, 48000)
+    make_slice('r1 his house is', 'rdp_v1', 3.278787, 6.742294, 48000)
+    make_slice('r1 most days', 'rdp_v1', 7.157915, 12.918883, 48000)
+    make_slice('r1 tethered only by', 'rdp_v1', 12.965063, 17.952513, 48000)
+    make_slice('r1 at night, far off', 'rdp_v1', 18.552855, 25.826220, 48000)
+    make_slice('r1 once a fish swam', 'rdp_v1', 26.484287, 31.864268, 48000)
+    make_slice('r1 once his breathing', 'rdp_v1', 31.806543, 35.062240, 48000)
+    make_slice('r1 he put something', 'rdp_v1', 35.593311, 38.087036, 48000)
+    make_slice('r1 here, hold this', 'rdp_v1', 38.087036, 40.938657, 48000)
+    make_slice('r1 a while or maybe', 'rdp_v1', 41.700629, 46.018468, 48000)
+    make_slice('r1 we were standing', 'rdp_v1', 46.711170, 51.756345, 48000)
+    make_slice('r1 this is the skull', 'rdp_v1', 51.894886, 54.296251, 48000)
+    make_slice('r1 if you put it up', 'rdp_v1', 54.515606, 57.263322, 48000)
+    make_slice('r1 you can hear', 'rdp_v1', 57.309502, 61.419531, 48000)
+    make_slice('r1 to be born', 'rdp_v1', 61.419531, 64.305787, 48000)
 
-    make_slice('n1 my half brother', 'cnrp_v1', 3.641721, 6.921682)
-    make_slice('n1 his house is', 'cnrp_v1', 6.921682, 11.118102)
-    make_slice('n1 most days', 'cnrp_v1', 11.118102, 17.931256)
-    make_slice('n1 tethered only by', 'cnrp_v1', 17.931256, 22.923549)
+    make_slice('n1 my half brother', 'cnrp_v1', 3.641721, 6.921682, 48000)
+    make_slice('n1 his house is', 'cnrp_v1', 6.921682, 11.118102, 48000)
+    make_slice('n1 most days', 'cnrp_v1', 11.118102, 17.931256, 48000)
+    make_slice('n1 tethered only by', 'cnrp_v1', 17.931256, 22.923549, 48000)
     slices['n1 at night, far off'] = \
         pg.SequencePE(
-            (_make_slice('cnrp_v1', 22.911789, 26.599905), None),
-            (_make_slice('cnrp_v1', 37.689513, 40.821886), None))
-    make_slice('n1 once a fish swam', 'cnrp_v1', 40.821886, 47.364502)
-    make_slice('n1 once his breathing', 'cnrp_v1', 47.364502, 51.191554)
-    make_slice('n1 he put something', 'cnrp_v1', 51.191554, 55.372261)
-    make_slice('n1 here, hold this', 'cnrp_v1', 55.372261, 58.694091)
-    make_slice('n1 a while or maybe', 'cnrp_v1', 58.694091, 62.761123)
-    make_slice('n1 we were standing', 'cnrp_v1', 66.019801, 76.919952)
-    make_slice('n1 this is the skull', 'cnrp_v1', 76.919952, 79.951280)
-    make_slice('n1 if you put it up', 'cnrp_v1', 79.951280, 82.780520)
-    make_slice('n1 you can hear', 'cnrp_v1', 82.780520, 88.476891)
-    make_slice('n1 to be born', 'cnrp_v1', 88.476891, 91.533480)
+            (_make_slice('cnrp_v1', 22.911789, 26.599905, 48000), None),
+            (_make_slice('cnrp_v1', 37.689513, 40.821886, 48000), None))
+    make_slice('n1 once a fish swam', 'cnrp_v1', 40.821886, 47.364502, 48000)
+    make_slice('n1 once his breathing', 'cnrp_v1', 47.364502, 51.191554, 48000)
+    make_slice('n1 he put something', 'cnrp_v1', 51.191554, 55.372261, 48000)
+    make_slice('n1 here, hold this', 'cnrp_v1', 55.372261, 58.694091, 48000)
+    make_slice('n1 a while or maybe', 'cnrp_v1', 58.694091, 62.761123, 48000)
+    make_slice('n1 we were standing', 'cnrp_v1', 66.019801, 76.919952, 48000)
+    make_slice('n1 this is the skull', 'cnrp_v1', 76.919952, 79.951280, 48000)
+    make_slice('n1 if you put it up', 'cnrp_v1', 79.951280, 82.780520, 48000)
+    make_slice('n1 you can hear', 'cnrp_v1', 82.780520, 88.476891, 48000)
+    make_slice('n1 to be born', 'cnrp_v1', 88.476891, 91.533480, 48000)
 
-    make_slice('n2 my half brother', 'cnrp_v2', 3.895042, 6.797230)
-    make_slice('n2 his house is', 'cnrp_v2', 6.797230, 9.966724)
-    make_slice('n2 most days', 'cnrp_v2', 9.966724, 18.240505)
-    make_slice('n2 tethered only by', 'cnrp_v2', 18.240505, 23.039299)
-    make_slice('n2 at night, far off', 'cnrp_v2', 23.039299, 29.556492)
-    make_slice('n2 once a fish swam', 'cnrp_v2', 29.951088, 34.711695)
-    make_slice('n2 once his breathing', 'cnrp_v2', 34.711695, 38.441261)
-    make_slice('n2 he put something', 'cnrp_v2', 38.441261, 43.010934)
-    make_slice('n2 here, hold this', 'cnrp_v2', 43.010934, 46.218615)
-    make_slice('n2 a while or maybe', 'cnrp_v2', 46.218615, 49.706332)
-    make_slice('n2 we were standing', 'cnrp_v2', 51.602937, 59.609412)
-    make_slice('n2 this is the skull', 'cnrp_v2', 59.609412, 61.798781)
-    make_slice('n2 if you put it up', 'cnrp_v2', 61.798781, 64.675511)
-    make_slice('n2 you can hear', 'cnrp_v2', 64.675511, 69.881629)
-    make_slice('n2 to be born', 'cnrp_v2', 69.881629, 72.794438)
+    make_slice('n2 my half brother', 'cnrp_v2', 3.895042, 6.797230, 48000)
+    make_slice('n2 his house is', 'cnrp_v2', 6.797230, 9.966724, 48000)
+    make_slice('n2 most days', 'cnrp_v2', 9.966724, 18.240505, 48000)
+    make_slice('n2 tethered only by', 'cnrp_v2', 18.240505, 23.039299, 48000)
+    make_slice('n2 at night, far off', 'cnrp_v2', 23.039299, 29.556492, 48000)
+    make_slice('n2 once a fish swam', 'cnrp_v2', 29.951088, 34.711695, 48000)
+    make_slice('n2 once his breathing', 'cnrp_v2', 34.711695, 38.441261, 48000)
+    make_slice('n2 he put something', 'cnrp_v2', 38.441261, 43.010934, 48000)
+    make_slice('n2 here, hold this', 'cnrp_v2', 43.010934, 46.218615, 48000)
+    make_slice('n2 a while or maybe', 'cnrp_v2', 46.218615, 49.706332, 48000)
+    make_slice('n2 we were standing', 'cnrp_v2', 51.602937, 59.609412, 48000)
+    make_slice('n2 this is the skull', 'cnrp_v2', 59.609412, 61.798781, 48000)
+    make_slice('n2 if you put it up', 'cnrp_v2', 61.798781, 64.675511, 48000)
+    make_slice('n2 you can hear', 'cnrp_v2', 64.675511, 69.881629, 48000)
+    make_slice('n2 to be born', 'cnrp_v2', 69.881629, 72.794438, 48000)
 
     make_slice('taiko1', 'taiko', 2.42019, 7.51533)
     make_slice('taiko1', 'taiko', 2.42019, 7.51533)
@@ -214,6 +227,12 @@ def make_named_slices(named_wav_files:dict[str, pg.ProcessingElement]) -> dict[s
     make_slice('jasper4', 'jasper4', None, None)
     make_slice('jasper5', 'jasper5', None, None)
     make_slice('jasper6', 'jasper6', None, None)
+    make_slice('jasper1_0_3', 'jasper1_0_3', None, None)
+    make_slice('jasper2_0_3', 'jasper2_0_3', None, None)
+    make_slice('jasper3_0_3', 'jasper3_0_3', None, None)
+    make_slice('jasper4_0_3', 'jasper4_0_3', None, None)
+    make_slice('jasper5_0_3', 'jasper5_0_3', None, None)
+    make_slice('jasper6_0_3', 'jasper6_0_3', None, None)
 
     make_slice('frogs1', 'frogs1', None, None)
     make_slice('frogs2', 'frogs2', None, None)
@@ -222,21 +241,14 @@ def make_named_slices(named_wav_files:dict[str, pg.ProcessingElement]) -> dict[s
     make_slice('foghorn2', 'foghorns', 72.0186, 90.8621)
     make_slice('foghorn3', 'foghorns', 111.513, 132.938)
     make_slice('foghorn4', 'foghorns', 132.421, 150.49)
-    make_slice('foghorns_full', 'foghorns', 5.93702, 235.932)
+    make_slice('foghorns', 'foghorns', 5.93702, 235.932)
 
     make_slice('snores', 'snores', 0.855376, 63.232)
 
-    # Note: BiquadPE requires contiguous samples requests.  Timewarp produces
-    # discontiguous requests, so TimewarpPE must be an input to BiquadPD, not
-    # the other way around
-    slices['bubbles_1_00'] = highpass_4th_order(
-        named_wav_files['bubbles'], 1000.0)
-    slices['bubbles_0_50'] = highpass_4th_order(
-        pg.TimeWarpPE(named_wav_files['bubbles'], 0.50), 500.0)
-    slices['bubbles_0_25'] = highpass_4th_order(
-        pg.TimeWarpPE(named_wav_files['bubbles'], 0.25), 250.0)
-    slices['bubbles_0_125'] = highpass_4th_order(
-        pg.TimeWarpPE(named_wav_files['bubbles'], 0.125), 125.0)
+    make_slice('bubbles', 'bubbles', None, None)
+    make_slice('bubbles_0_125', 'bubbles_0_125', None, None)
+
+    make_slice('crowd', 'crowd2', None, None)
 
     return slices
 
@@ -246,7 +258,7 @@ def post_process_slices(named_slices):
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
-def get_irs():
+def get_named_irs():
     return load_named_irs()
 
 def get_wav_files():
@@ -270,7 +282,7 @@ if __name__ == "__main__":
             renderer.start()
             renderer.play_extent()
 
-    def _audition_named_asset(asset_dict):
+    def _audition_named_assets(asset_dict):
         """
         asset_dict: dict[str, ProcessingElement]
         Uses _play(pe) to audition the selected PE.

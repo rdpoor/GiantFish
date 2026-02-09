@@ -30,4 +30,4 @@ where = ["src"]
 managed = true
 
 [tool.uv.sources]
-pygmu2 = { git = "https://github.com/rdpoor/pygmu2", branch = "main" }
+pygmu2 = { path = "/Users/r/Projects/pygmu2", editable = true }

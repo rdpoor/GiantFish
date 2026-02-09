@@ -1,6 +1,7 @@
 # Mix three segmented voices: left, center and right
 
 import pygmu2 as pg
+pg.set_sample_rate(44100)
 from pygmu2.logger import get_logger
 from pygmu2.asset_manager import AssetManager, GoogleDriveAssetLoader
 
