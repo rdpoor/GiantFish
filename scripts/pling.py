@@ -64,27 +64,52 @@ def make_instrument_stack(stack):
     )
     # coerce to stereo
     plucks = pg.SpatialPE(plucks, method=pg.SpatialAdapter(channels=2))
-    # wet_plucks = pg.ReverbPE(plucks, IR, mix=0.6)
-    #return wet_plucks
-    return plucks
+    wet_plucks = pg.ReverbPE(plucks, IR, mix=0.6)
+    return wet_plucks
 
 
 if __name__ == "__main__":
 
+    # hand-picked chord stacks
+    stacks = [
+        (47, 54, 62, 67),  # okay
+        (53, 58, 66, 74),  # okay
+        (46, 51, 54, 62),  # octave down?
+        (47, 52, 55, 63),  # okay
+        (54, 61, 64, 71),  # sweet sus 7
+        (53, 61, 66, 72),  # good
+        (52, 60, 63, 71),  # good
+        (47, 53, 58, 63),  # good
+        (47, 55, 57, 62),  # sweet
+        (49, 55, 63, 68),  # good
+        (50, 57, 64, 70),  # okay
+        (49, 55, 60, 66),  # okay
+        (46, 53, 55, 63),  # tonal
+        (53, 58, 66, 73),  # good
+    ]
+
     # while True:
-    #     # choice = input("Hit return to hear a pling): ").strip()
-    #     wet_plucks = make_instrument_stack(make_good_pitches())
-    #     pg.play_offline(pg.SetExtentPE(wet_plucks, 0, s2s(9)), SAMPLE_RATE)
+    #     pitches = make_good_pitches()
+    #     wet_plucks = make_instrument_stack(pitches)
+    #     pg.play_offline(pg.SetExtentPE(wet_plucks, 0, s2s(6)), SAMPLE_RATE)
+    #     if input("Keep? ").strip().lower() == 'y':
+    #         print(f'** {pitches}')
 
-    pitches = [52, 59, 68, 73]
+    for stack in stacks:
+        print(stack)
+        plucks = make_instrument_stack(stack)
+        pg.play_offline(
+            pg.SetExtentPE(plucks, s2s(0), s2s(10)),
+            sample_rate=SAMPLE_RATE)
 
-    dry_chord = make_instrument_stack(pitches)
-    wet_chord = pg.ReverbPE(make_instrument_stack(pitches), IR, mix=0.6)
-    seq = pg.SequencePE([
-        (dry_chord, s2s(0)),
-        (wet_chord, s2s(3)),
-        ])
-    pg.play_offline(
-        pg.SetExtentPE(seq, s2s(0), s2s(18)),
-        path='blings.wav', 
-        sample_rate=SAMPLE_RATE)
+    # pitches = [52, 59, 68, 73]
+    # dry_chord = make_instrument_stack(pitches)
+    # wet_chord = pg.ReverbPE(make_instrument_stack(pitches), IR, mix=0.6)
+    # seq = pg.SequencePE([
+    #     (dry_chord, s2s(0)),  # play dry chord
+    #     (wet_chord, s2s(3)),  # then play wet
+    #     ])
+    # pg.play_offline(
+    #     pg.SetExtentPE(seq, s2s(0), s2s(18)),
+    #     path='blings.wav', 
+    #     sample_rate=SAMPLE_RATE)

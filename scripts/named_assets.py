@@ -255,6 +255,43 @@ def make_named_slices(named_wav_files:dict[str, pg.ProcessingElement]) -> dict[s
 def post_process_slices(named_slices):
     return named_slices
 
+def load_uke_notes() -> dict[str, pg.ProcessingElement]:
+    """
+    Load and cache all the single-pluck ukulele sound files from Andy Milburn's
+    library at media/audio/ukes/A/uke_??.wav.  Create a stereo PE stream for
+    each file via SpatialPE(WavReader(f)) and associate it with an asset name.
+    """
+
+    folder_id = '1d1h38mZyCZpCHewklJN_PW3uG01K29ON'   # Andy milburn media 
+    # folder_id = '1qX5s1KCxAodHIA2sxxiHgybAHY_52LQn' # RDP GiantFish
+
+    # oauth_client_secrets may be omitted if stored at the default config path.
+    asset_loader = GoogleDriveAssetLoader(folder_id=folder_id)
+    asset_manager = AssetManager(asset_loader=asset_loader)
+
+    named_wav_files = {}
+
+    def load_named_wav_file(name:str, wav_file_name:str):
+        # Load the .wav file if not already cached locally
+        path = asset_manager.load_asset(wav_file_name)
+
+        # Create a WavReaderPE for the .wav file, coerce to stereo
+        stream = pg.WavReaderPE(path=path)
+        if stream.file_sample_rate != SAMPLE_RATE:
+            logger.warn(f'Sample rate of {stream} does not match system sample rate of {SAMPLE_RATE}')
+        else:
+            logger.info(f'Reading {stream}')
+
+        # Coerce to stereo
+        stream = pg.SpatialPE(stream, method=pg.SpatialAdapter(channels=2))
+
+        named_wav_files[name] = stream
+
+    # load up all the uke files
+    for i in range(21, 96):
+        load_named_wav_file(f'uke_{i:02d}', f'media/audio/ukes/A/{i:02d}.wav')
+    return named_wav_files
+
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
@@ -266,6 +303,9 @@ def get_wav_files():
 
 def get_named_slices():
     return post_process_slices(make_named_slices(get_wav_files()))
+
+def get_uke_notes():
+    return load_uke_notes()
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
