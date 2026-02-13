@@ -16,6 +16,7 @@ from named_assets import (
     highpass_4th_order
 )
 import random
+random.seed(20260210)
 
 SAMPLE_RATE = 44100
 pg.set_sample_rate(SAMPLE_RATE)
@@ -135,7 +136,7 @@ def make_whalesong():
 
 # pan uwing a random walk
 wandering_whalesong = pg.SpatialPE(
-    make_whalesong(),
+    pg.LoopPE(make_whalesong()),
     method=pg.SpatialConstantPower(
         azimuth=pg.RandomPE(
             min_value=-80.0,
@@ -187,12 +188,14 @@ PLING_STACKS = [
     (47, 52, 55, 63),  # okay
     (47, 53, 58, 63),  # good
     (53, 61, 66, 72),  # good
-    (47, 55, 57, 62),  # sweet
-    (49, 55, 63, 68),  # good
+    # (49, 55, 63, 68),  # good
+    (49, 55, 63, 74),  # good
+
+    (52, 60, 63, 71),  # good
+    (47, 55, 57, 73),  # too sweet
     (50, 57, 64, 70),  # okay
     (49, 55, 60, 66),  # okay
     (46, 53, 55, 63),  # tonal
-    (52, 60, 63, 71),  # good
 ]
 
 def make_randomized_start_times(n:int, max_start_time:float = 1.0) -> list[float]:
@@ -362,7 +365,7 @@ def make_voices():
     segments2.append(pg.DelayPE(p2, delay))
     segments3.append(pg.DelayPE(p3, delay))
 
-    delay += duration + b2samp(1.0)
+    delay += duration + b2samp(1.5)
     print(f"To Be Born ({samp2b(delay):0.2f} beats)")
     duration, p1, p2, p3 = trio(
         "n1 to be born", "r1 to be born", "n2 to be born")
@@ -413,7 +416,8 @@ bubbles_gain_db = pg.PiecewisePE([
     (b2samp(38+37.5), 0.0),    # here, hold this (duck)
     (b2samp(38+38), -10.0),    
     (b2samp(38+43), 0.0),    
-    (b2samp(110), 0.0),   # start ramp down
+    (b2samp(38+68), -20.0),   # ramp down
+    (b2samp(110), -20.0),   # start ramp down
     (b2samp(115), -60),   # complete ramp down
     ])
 bubbles_mix = pg.GainPE(
@@ -476,13 +480,16 @@ plings_mix = plings_dly
 voices_dly = pg.DelayPE(voices_track, b2samp(38))
 voices_mix = voices_dly
 
-crowd_dly = pg.DelayPE(crowd_track, b2samp(38+38))
+# start fading in before "this is the skull" at 38 + 54.6 beats"
+# fade out fast at "to be born" at 38 + 65.5
+crowd_dly = pg.DelayPE(crowd_track, b2samp(38+52))
 crowd_gain_db = pg.PiecewisePE([
-    (b2samp(0), -60.0),   # holdoff
-    (b2samp(38+38), -60.0),    # here, hold this
-    (b2samp(38+40), -20.0),    # a while or maybe
-    (b2samp(38+67), 0.0),    # ... to be born (complete ramp down)  
-    (b2samp(115), -50),        # to end of piece
+    (b2samp(0), -60.0),       # holdoff
+    (b2samp(38+52), -60.0),   # 
+    (b2samp(38+54), -20.0),   # this is the skull
+    (b2samp(38+64), 4.0),     # (complete ramp to full)
+    (b2samp(38+68), -20.0),   # ramp down
+    (b2samp(115), -60.0),     # end
     ])
 crowd_mix = pg.GainPE(
     crowd_dly, 
@@ -503,7 +510,8 @@ mix = pg.MixPE(
     crowd_mix,
     )
 duration = b2samp(115)
-pg.play_offline(
+# Save mix to file "mix.wav" and open sound file browser to play it
+pg.browse(
     pg.CropPE(mix, 0, duration),
     path = "mix.wav", 
-    sample_rate = SAMPLE_RATE)
+    )
